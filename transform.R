@@ -2,10 +2,16 @@ setwd("/")
 setwd("Users/pc/unah/I P 2020/seminario/repositorio-git/encuesta-Seminario/")
 
 #install.packages("dplyr") #instalamos la libreria dplyr
+#install.packages("ggplot2")
+#install.packages("corrplot")
+#install.packages("factoextra")
+#install.packages("caret")
 
 survey <- read.csv("survey_cleaned.csv", sep = ",", header = T)
 
 survey_original <- read.csv("survey_cleaned.csv", sep = ",", header = T)
+
+survey <- survey %>% select(!correo)
 
 #-----------------------------------columna de practica actualmente---------------------------------------------------
 
@@ -31,6 +37,8 @@ hist(df_perc_practica_actualmente$Freq)
 
 qqnorm(df_perc_practica_actualmente$Freq)
 
+qqline(df_perc_practica_actualmente$Freq)
+
 #-------------------------------------------columna de Practica en primera opcion---------------------------------------
 
 survey$practica_primera_opcion <- as.factor(survey$practica_primera_opcion)
@@ -45,11 +53,13 @@ df_perc_primera_opcion <- as.data.frame(prop.table(table(survey$practica_primera
 
 df_perc_primera_opcion <- df_perc_primera_opcion %>% arrange(-Freq)
 
+df_perc_primera_opcion1 <- df_perc_primera_opcion
 
-boxplot(df_perc_primera_opcion$Freq)
-hist(df_perc_primera_opcion$Freq)
-qqnorm(df_perc_primera_opcion$Freq)
 
+boxplot(df_perc_primera_opcion1$Freq)
+hist(df_perc_primera_opcion1$Freq)
+qqnorm(df_perc_primera_opcion1$Freq)
+qqline(df_perc_primera_opcion1$Freq)
 
 df_perc_primera_opcion[df_perc_primera_opcion$Var1 %in% c("Si"), "estado_estudiante"] <- "Si hace practica en su primera opcion"
 df_perc_primera_opcion[df_perc_primera_opcion$Var1 %in% c("No"), "estado_estudiante"] <- "No hace practica en su primera opcion"
@@ -75,11 +85,12 @@ df_perc_cursa_clases <- as.data.frame(prop.table(table(survey$practica_cursando_
 
 df_perc_cursa_clases <- df_perc_cursa_clases %>% arrange(-Freq)
 
+df_perc_cursa_clases1 <- df_perc_cursa_clases
 
-boxplot(df_perc_cursa_clases$Freq)
-hist(df_perc_cursa_clases$Freq)
-qqnorm(df_perc_cursa_clases$Freq)
-
+boxplot(df_perc_cursa_clases1$Freq)
+hist(df_perc_cursa_clases1$Freq)
+qqnorm(df_perc_cursa_clases1$Freq)
+qqline(df_perc_cursa_clases1$Freq)
 
 df_perc_cursa_clases[df_perc_cursa_clases$Var1 %in% c("Si"), "clases_durante_practica"] <- "Si cursa clases durante practica"
 df_perc_cursa_clases[df_perc_cursa_clases$Var1 %in% c("No"), "clases_durante_practica"] <- "No cursa clases durante practica"
@@ -111,7 +122,7 @@ boxplot(df_perc_rango_indice$Freq)
 hist(df_perc_rango_indice$Freq)
 
 qqnorm(df_perc_rango_indice$Freq)
-
+qqline(df_perc_rango_indice$Freq)
 #----------------------------------------------columna rendimiento academico-------------------------------------
 
 survey$rendimiento_academico <- as.factor(survey$rendimiento_academico) 
@@ -131,7 +142,7 @@ boxplot(df_perc_rendimiento_academico$Freq)
 hist(df_perc_rendimiento_academico$Freq)
 
 qqnorm(df_perc_rendimiento_academico$Freq)
-
+qqline(df_perc_rendimiento_academico$Freq)
 #----------------------------------------------------------------------------------------------------------------
 
 mis_variables_a_tratar <- survey %>% select(practica_actualmente, estado_estudiante, clases_durante_practica, rango_indice, rendimiento_academico)
@@ -166,3 +177,24 @@ grf5 <- barplot(prop.table(table(survey$rendimiento_academico)), las=1, main = "
 text(grf5, c(0,0), round(prop.table(table(survey$rendimiento_academico)), 3))
 
 #--------------------------------------------------------------
+
+
+prop.table(table(survey$rubro_trabajo))
+
+as.data.frame(prop.table(table(survey$area_sistema_dominada)))
+
+varFreq <- as.data.frame(prop.table(table(survey$area_sistema_dificulta)))
+
+porcentaje <- varFreq %>% filter(Freq < 0.1) %>% select(Freq)
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+
+summary(as.data.frame(table(survey$area_sistema_dificulta)))
+survey[survey$area_sistema_dificulta == "X", "area_sistema_dificulta"] <- "Electrónica"
+survey[survey$area_sistema_dificulta == "Tengo que hacerle ganas", "area_sistema_dificulta"] <- "Electrónica"
+survey[survey$area_sistema_dificulta == "Matemáticas", "area_sistema_dificulta"] <- "Electrónica"
+survey[survey$area_sistema_dificulta == "Redes de datos", "area_sistema_dificulta"] <- "Infraestructura"
+
+#---------------------------------------------------------------------------------------------------------------------------------------
+
+write.csv(survey, "survey_cleaned_v2.csv", row.names = F)

@@ -13,3 +13,4 @@ names(survey) <- column_names$traduccion  #se cambian los nombres de las columna
 head(survey)
 
 write.csv(survey, "survey_cleaned.csv", row.names = F)  #se crea un nuevo csv
+

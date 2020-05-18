@@ -189,8 +189,7 @@ porcentaje <- varFreq %>% filter(Freq < 0.1) %>% select(Freq)
 
 #---------------------------------------------------------------------------------------------------------------------------------------
 
-as.data.frame(table(survey$area_sistema_dificulta))
-
+as.data.frame(prop.table(table(survey$area_sistema_dificulta))) %>% arrange(-Freq)
 survey[survey$area_sistema_dificulta == "X", "area_sistema_dificulta"] <- "Electrónica "
 survey[survey$area_sistema_dificulta == "Tengo que hacerle ganas", "area_sistema_dificulta"] <- "Electrónica "
 survey[survey$area_sistema_dificulta == "Matemáticas ", "area_sistema_dificulta"] <- "Electrónica "

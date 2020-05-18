@@ -155,7 +155,7 @@ Si: "Si cursa clases durante práctica"
 
 ### 4.1 El siguiente análisis descriptivo se hará sobre la variable estado_estudiante. 
 
-Esta variable captura si el estudiante que realiza práctica ptofesional, lo hace en el lugar de su primera elección.
+Esta variable captura si el estudiante que realiza práctica profesional, lo hace en el lugar de su primera elección.
 
 boxplot:
 
@@ -260,6 +260,8 @@ La figura anterior representa la normalidad de la distribución de los datos par
 
 ## 5. Correlaciones
 
+De acuerdo a los tipos de variables capturadas para nuestro dataset, solo se pueden hacer correlaciones entre variables categóricas, ya que no hay variables de tipo numérico.
+
 ### A continuación se mostrarán algunas correlaciones.
 
 5.1 Correlación entre rendimiento_academico y rechazo_en_entrevista:
@@ -339,7 +341,7 @@ por lo tanto que el estudiante tenga dificultad en determinadas areas si influye
 
 
 
-## Análisis explicativo
+## 6. Análisis explicativo
 
 ### regresiones
 
@@ -424,4 +426,58 @@ En el grafico anterior vemos con claridad que el estudiantado que tiene alto ren
 
 
 
-## solucion ti
+## 7. Solución tecnológica
+
+Con toda la informacion mostrada anteriormente, vemos como el problema de nuestro estudio necesita una solucion, para este caso en particular se propone una solucion basada en tecnologia a continuacion mostramos en que consite nuestra solucion:
+
+
+![Ilustración Arquitectura propuesta tecnológica Fuente: (Propia, Fuente Propia, 2020)](https://raw.githubusercontent.com/LeonardoFlores1/encuesta-Seminario/master/ilustraciones/WhatsApp%20Image%202020-05-11%20at%201.47.25%20PM.jpeg)
+
+
+
+<br/>
+Esta solución tecnológica está diseñada y pensada para ser utilizada en diferentes plataformas y dispositivos a través de la web, 
+esto nos da la facilidad y flexibilidad de llegar al mayor número de usuarios, simplificando costos y esfuerzo de desarrollo  
+y así mismo ser un producto multiplataforma y multi sistema operativo, ya que únicamente se necesitara un explorador web y una conexión a internet.
+Buscamos que nuestro sistema sea de rápida implementación y fácilmente escalable, para un futuro crecimiento exponencial, ya que el área de nuestra investigación es una de las áreas más demandadas  en el país, el área laboral. 
+Para lograr esta escalabilidad, y obtener una  fácil y rápida implementación destacamos el almacenamiento de información en 
+la nube a través de amazon. Utilizando su gama de servicios en la nube de su plataforma online Amazon Web services junto los servicios de Amazon ML (Machine Learning).
+
+<br/>
+
+* #### Comunicación de servicios
+
+![Ilustración Arquitectura propuesta tecnológica Fuente: (Propia, Fuente Propia, 2020)](https://raw.githubusercontent.com/LeonardoFlores1/encuesta-Seminario/master/ilustraciones/WhatsApp%20Image%202020-05-17%20at%2012.30.39%20PM%20(2).jpeg)
+
+En este pequeño diagrama podemos ver como esta estructurado el servicio de acceso del usuario a el sistema, en este punto la interacción que buscamos es que sea de la manera mas sencilla posible para que cualquiera pueda tener acceso y sea de fácil uso, básicamente los requisitos para el usuario es contar con cualquier dispositivo que se conecte a internet y contar con una conexión de datos de internet, con esto logramos ser accesibles desde cualquier plataforma sin importar si es un dispositivo móvil , computadora, o sin importar el sistema operativo del usuario.
+
+La funcionalidad de este servicio es básicamente lograr la interacción y recopilación de datos con el usuario, este diagrama en especifico si se presta una atención detallada al diagrama general se puede observar como se divide en 2 servicios, esto es porque un servicio será la interacción con las empresas que proveerán de datos de ofertas laborales al sistema, y el otro es la interacción del usuario que proveerá de datos de su perfil personal y sus preferencias personales al sistema, como se puede ver aunque son servicios que funcionaran por separado tienen la misma lógica aplicada en este diagrama en el cual podemos ver que la funcionalidad principal que buscamos con este servicio es la recolección de datos. Donde el usuario ingresa a la plataforma de Integración Empresarial a través de internet generando con esto una interacción entre el sitio web alojado en servidores web de amazon  contra el api del backend también alojada en los servidores de la nube de Amazon, luego posterior mente el api servirá como intermedio entre los datos del usuario 
+y la base de datos ya sea para almacenar la información ingresada por el usuario o para consultarla siendo la función 
+principal del api servir o almacenar mediante la base de datos, información de relevancia para  el usuario.
+
+![Servicio Recoleccion de ofertas de apis de terceros](https://raw.githubusercontent.com/LeonardoFlores1/encuesta-Seminario/master/ilustraciones/WhatsApp%20Image%202020-05-17%20at%2012.30.39%20PM%20(1).jpeg)
+
+En este diagrama queremos mostrar como tendremos un segundo servicio de recolección de datos para el área de ofertas laborales que estarán disponibles en nuestro sitio, como se menciono en la parte anterior existe un acceso para empresas que dotara de información de cv a nuestra base de datos, pero este puede que no sea siempre el caso, y si esto sucede dejaría prácticamente sin funcionalidad nuestra plataforma, para solucionar este problema y dotar de dinamismo nuestro sitio y que no dependa de alguien que alimente de ofertas laborales se implementa el servicio de recolección de data de Apis de terceros, este consistirá en básicamente consultar sitios web que tengan ofertas laborales y obtener estos datos en una comunicación directa entre nuestra api y las Apis de terceros donde nuestra api hará peticiones a las Apis de terceros recolectando así estas ofertas laborales , y buscando estructurar esta información para almacenarla en nuestra base de datos. En caso de que esta información obtenida no sea de forma estructurada ya que puede venir de archivos de texto, pdf, archivos json etc, nuestra api lo que hará con esta información no estructurada será almacenarla tal cual la encontró en el almacenamiento de amazon S3 o blob storage donde esto nos permitirá ser accedida mas adelante para darle un tratamiento especial a estos datos para luego mostrar estos al usuario. El objetivo principal que buscamos con este servicio claramente es la recopilación de la mayor cantidad de ofertas laborales para tener una gran variedad de opciones en nuestra data y que este así disponible para nuestros usuarios.
+
+![Servicio deAmazon ML (Machine Learning)](https://raw.githubusercontent.com/LeonardoFlores1/encuesta-Seminario/master/ilustraciones/WhatsApp%20Image%202020-05-17%20at%2012.30.39%20PM.jpeg)
+
+la base de nuestro sistema serán las recomendaciones , pero no queremos que sean cualquier tipo de recomendaciones de forma aleatoria, queremos lograr que nuestro sistema tenga un plus, y para esto queremos sacar ventajas del machine learning. Los sistemas de recomendación de contenidos se han hecho muy populares en los últimos años. Entre los ámbitos más extendidos se encuentran las recomendaciones de productos en tiendas online, películas, vídeos, música, libros, productos o recomendaciones de perfiles. Los Sistemas de Recomendación intentan personalizar al máximo lo que ofrecerán a cada usuario. A nivel de nuestra arquitectura se puede observar el servicio de ML (Machine Learning), y atraves de estos servicios que ofrece amazon web services de ML (Machine Learning), queremos llegar a lograr este objetivo, ya que con estas soluciones que nos ofrece esta empresa es mucho más fácil, rápido y menos costoso implementar este tipo de sistemas aprovechando las herramientas de ML (Machine Learning) que amazon pone a nuestro alcance esto se hace posible. Como podemos observar en nuestra arquitectura para llegar a este servicio en especifico hacemos un flujo de recolección de datos previamente para así crear nuestro dataSet que puede ser de datos estructurados (sql) almacenados en la base de datos o datos no estrucurados(pdf,texto,json..etc) que estarian almacenados en el blob storage y asi dotar de la información valiosa y necesaria a nuestro servicio de ML (Machine Learning) para así poder trabajar estos datos. Con todo esto lograríamos exprimir estas ventajas de ML (Machine Learning), y así lograr un sistema de recomendación afinado para nuestro caso de estudio donde gestionaríamos nuestro Collaborative Filtering, pues utiliza la información de «masas» para identificar perfiles similares y aprender de los datos para recomendar productos de manera individual en nuestro caso ofertas laborales personalizadas. 
+
+![Servicio de notificaciones al usaurio](https://raw.githubusercontent.com/LeonardoFlores1/encuesta-Seminario/master/ilustraciones/WhatsApp%20Image%202020-05-17%20at%2012.30.40%20PM.jpeg)
+
+En este pequeño diagrama podemos ver como está estructurado el servicio de notificaciones al usuario, este servicio básicamente, 
+funcionara mediante la comunicación de correo electrónico y esta se lograra gracias a otra de las opciones que nos brinda la plataforma
+de amazon en la nube que es el Amazon Simple Email Service (ASES). El objetivo general de este servicio es comunicar al usuario de ofertas laborales que pueden ser de su interés, pero este servicio en específico para nuestro sistema lo hemos dividido en dos partes a nivel de funcionalidad. La primera parte es donde buscamos trabajar por el estudiante de la UNAH mucho antes de que el incluso separa que esta herramienta en línea existe, esto lo logramos comunicando nuestra api directamente con la api de la universidad (UNAH) donde de ellos obtendremos únicamente el correo institucional, siendo esta una información que la unah provee de forma publica a los maestros todos los periodos, nosotros la solicitaremos a través de nuestra api únicamente de los estudiantes que tengan la característica o que estén catalogados por la UNAH como estudiantes por egresar , enviando así ofertas laborales almacenadas en nuestro sistema como mostramos en los diagramas previos, y que sean del interés del estudiante acorde a su área de estudio directamente a su correo electrónico.
+La segunda parte de esta es que si un estudiante le parece interesante la información que está recibiendo a través de su correo 
+electrónico mediante nuestra plataforma, puede acceder a este y registrarse como un usuario, llenar su perfil, detallando sus 
+intereses personales y laborales, luego nuestro sistema analizaría sus datos y mediante ML (Machine Learning), buscaríamos para este la oferta laborales que mas se ajusten a su perfil mediante el sistemas de recomendación de perfiles laborales, siendo este estudiante nuevamente notificado mediante correo electrónico y mostrándole asi que se encontró una coincidencia para su perfil.
+
+
+
+
+
+
+
+
+
+

@@ -7,6 +7,8 @@ setwd("Users/pc/unah/I P 2020/seminario/repositorio-git/encuesta-Seminario/")
 #install.packages("factoextra")
 #install.packages("caret")
 
+library(dplyr) #carga la ibreria 
+
 survey <- read.csv("survey_cleaned.csv", sep = ",", header = T)
 
 survey_original <- read.csv("survey_cleaned.csv", sep = ",", header = T)
@@ -25,8 +27,6 @@ as.data.frame(prop.table(table(survey$practica_actualmente))) # devuelve la info
 
 df_perc_practica_actualmente <- as.data.frame(prop.table(table(survey$practica_actualmente)))#asignamos el resultado 
                                           #de la linea anterior a la variable df
-
-library(dplyr) #carga la ibreria 
 
 df_perc_practica_actualmente <- df_perc_practica_actualmente %>% arrange(-Freq) #ordena los datos en orden descendente 
                                           #con el signo (-) y lo deja guardado en df_perc
@@ -189,12 +189,18 @@ porcentaje <- varFreq %>% filter(Freq < 0.1) %>% select(Freq)
 
 #---------------------------------------------------------------------------------------------------------------------------------------
 
-summary(as.data.frame(table(survey$area_sistema_dificulta)))
-survey[survey$area_sistema_dificulta == "X", "area_sistema_dificulta"] <- "Electrónica"
-survey[survey$area_sistema_dificulta == "Tengo que hacerle ganas", "area_sistema_dificulta"] <- "Electrónica"
-survey[survey$area_sistema_dificulta == "Matemáticas", "area_sistema_dificulta"] <- "Electrónica"
+as.data.frame(table(survey$area_sistema_dificulta))
+
+survey[survey$area_sistema_dificulta == "X", "area_sistema_dificulta"] <- "Electrónica "
+survey[survey$area_sistema_dificulta == "Tengo que hacerle ganas", "area_sistema_dificulta"] <- "Electrónica "
+survey[survey$area_sistema_dificulta == "Matemáticas ", "area_sistema_dificulta"] <- "Electrónica "
 survey[survey$area_sistema_dificulta == "Redes de datos", "area_sistema_dificulta"] <- "Infraestructura"
 
 #---------------------------------------------------------------------------------------------------------------------------------------
 
 write.csv(survey, "survey_cleaned_v2.csv", row.names = F)
+
+
+
+
+

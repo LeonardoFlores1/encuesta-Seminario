@@ -93,11 +93,12 @@ chisq.test(table(survey$area_sistema_dificulta,survey$rechazo_en_entrevista))
 
 #Ho: variables independientes
 #Ha: variables dependientes 
-#segun el p-value=0.807 obtenido en esta correlacion se rechaza la hipotesis nula
+#segun el p-value=0.5056 obtenido en esta correlacion se rechaza la hipotesis nula
 #conlcusion: como se rechaza la hipotesis nula, esto significa que las variables son dependientes
 #por lo tanto que el estudiante tenga dificultad en determinadas areas si influye sobre el rechazo que pueda tener un estudiante
 
 #---------------------------------------------------------------------------------------------------------------------------------------
+
 #---------------------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------------------
 

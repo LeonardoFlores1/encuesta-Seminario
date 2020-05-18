@@ -1,0 +1,427 @@
+---
+title: DIFICULTAD DE LOS ALUMNOS DE INGENIERÍA EN SISTEMAS PARA SER ACEPTADOS EN SU
+  PRIMERA OPCIÓN DE PRÁCTICA PROFESIONAL
+author: "Leonardo Flores"
+date: "17/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+library(factoextra)
+library(caret)
+```
+
+## 1. Introducción
+
+En este análisis tratamos de mostrar cuales son algunas de las razones o causas por las cuales los estudiantes de la carrera de ingeniería en sistemas de la UNAH pueden llegar a ser rechazados al momento de aplicar a un trabajo o su práctica profesional. 
+La recolección de estos datos se hizo mediante la aplicación de encuestas a los mismos estudiantes. Se conoce que para estos estudiantes es de suma importancia la realización de la práctica profesional y posteriormente la obtención de un trabajo, por lo que en este estudio se trata de mostrar cual sería una posible solución mediante la implementación de tecnología para preenir situaciones de rechazo y asi aumentar los casos de éxito en lo que actualmente es una problemática por la que muchos estudiantes se ven afectados.
+
+
+## 2. Variables capturadas
+
+```{r reading_dataset, echo=FALSE}
+
+survey <- read.csv("survey_cleaned_v2.csv", sep = ",", header = T)
+
+
+str(survey)
+```
+
+Como se puede observar se capturaron `r nrow(survey)` observaciones y `r length(names(survey))` columnas, estas fueron diseñadas en función de las siguientes categorías:
+
+1. Demográficas
+2. Datos académicos
+3. Hábitos del estudiante
+4. Experiencias previas
+5. Hardskills
+6. Área de la empresa
+7. Solución tecnológica
+
+A continuación se muestra un resumen rápido de nuestras columnas; se debe tener en cuenta que, la información recopilada en nuestra encuesta se basa en variables categóricas por lo que este resumen no tiene datos con relevancia numérica estadística, sin embargo las variables han sido tratadas por separado, y en la sección de análisis descriptivo de datos se puede observar el tratamiento de dichas variables para la obtención de los datos estadísticos de utilidad.
+
+```{r echo=FALSE}
+for (name in names(survey)) {
+  survey[,name] <- as.factor((survey[,name]))
+}
+ 
+summary(survey)
+```
+
+
+## 3. Tratamiento de columnas
+
+El principal tratamiento que se hizo fue a las observaciones con registros vacíos, en otras encuestas se pueden encontrar datos NA sin necesitar de algún tratamiento, sin embargo en nuestra encuesta no se encontró ningun dato NA, pero posteriormente se convirteron a NA para hacer las respectivas transformaciones.
+
+En el dataset, se encontraron los siguientes valores vacíos:
+
+### 3.1 Para la variable rubro_trabajo se encontró lo siguiente
+
+```{r echo=FALSE}
+survey_vacios <- read.csv("survey_cleaned.csv", sep = ",", header = T)
+
+as.data.frame(prop.table(table(survey_vacios$rubro_trabajo))*100)
+```
+
+Se puede observar que existen tres niveles en la columna Var1 de la variable rubro_trabajo, con un valor vacío y una frecuencia de 52.27%
+
+### 3.2 Para la variable practica_primera_opcion se encontró lo siguiente:
+
+```{r echo=FALSE}
+as.data.frame(prop.table(table(survey_vacios$practica_primera_opcion))*100)
+```
+
+Se puede observar que existen tres niveles en la columna Var1 de la variable practica_primera_opcion, con un valor vacío y una frecuencia de 70.45%
+
+
+### 3.3 para la variable practica_cursando clases
+
+```{r echo=FALSE}
+as.data.frame(prop.table(table(survey_vacios$practica_cursando_clases))*100)
+```
+
+Se puede observar que existen tres niveles en la columna Var1 de la variable practica_cursando_clases, con un valor vacío y una frecuencia de 70.45%
+
+### 3.4 Tratamiento de practica_primera_opcion:
+
+```{r echo=FALSE}
+survey_tratmiento <- read.csv("survey_cleaned.csv", sep = ",", header = T)
+
+df_perc_primera_opcion <- as.data.frame(prop.table(table(survey_tratmiento$practica_primera_opcion)))
+
+df_perc_primera_opcion[df_perc_primera_opcion$Var1 %in% c("Si"), "estado_estudiante"] <- "Si hace practica en su primera opcion"
+df_perc_primera_opcion[df_perc_primera_opcion$Var1 %in% c("No"), "estado_estudiante"] <- "No hace practica en su primera opcion"
+df_perc_primera_opcion[is.na(df_perc_primera_opcion$"estado_estudiante"), "estado_estudiante"]<- "no hace practica"
+
+df_perc_primera_opcion <- df_perc_primera_opcion %>% select(Var1,estado_estudiante)
+
+survey_tratmiento <- left_join(survey_tratmiento,df_perc_primera_opcion,by=c("practica_primera_opcion"="Var1"))
+
+survey_tratmiento <- survey_tratmiento[,!(names(survey_tratmiento) %in% c("practica_primera_opcion"))]
+
+```
+
+Como se pudo observar en la tabla generada de la varible práctica primera opcion, se obtuvo un valor de 70.45% de valores vacíos, se procede a pasar esos datos vacíos a NA´s, los cuales se trabajan con una funcion de R para poder asignarles un valor.
+
+Ese valor vacío que corresponde a los estudiantes que no realizan práctica profesional, se llena con la descripción "No hace práctica" y la columna llamada practica_primera_opcion se cambia por estado_estudiante.
+
+En otras palabras, se realizó unaa serie de imputaciones:
+
+El valor vacío, se llenó con "No hace práctica"
+No: "no hace practica en su primera opción"
+Si: "Si hace práctica en su primera opción"
+```{r echo=FALSE}
+as.data.frame(prop.table(table(survey_tratmiento$estado_estudiante))*100) 
+```
+
+### 3.4 Tratamiento practica_cursando_clases
+
+```{r echo=FALSE}
+
+df_perc_cursa_clases <- as.data.frame(prop.table(table(survey_tratmiento$practica_cursando_clases)))
+
+df_perc_cursa_clases[df_perc_cursa_clases$Var1 %in% c("Si"), "clases_durante_practica"] <- "Si cursa clases durante practica"
+df_perc_cursa_clases[df_perc_cursa_clases$Var1 %in% c("No"), "clases_durante_practica"] <- "No cursa clases durante practica"
+df_perc_cursa_clases[is.na(df_perc_cursa_clases$"clases_durante_practica"), "clases_durante_practica"]<- "no hace practica"
+
+df_perc_cursa_clases <- df_perc_cursa_clases %>% select(Var1,clases_durante_practica)
+
+survey_tratmiento <- left_join(survey_tratmiento,df_perc_cursa_clases,by=c("practica_cursando_clases"="Var1"))
+
+survey_tratmiento <- survey_tratmiento[,!(names(survey) %in% c("practica_cursando_clases"))]
+
+```
+
+
+```{r echo=FALSE}
+as.data.frame(prop.table(table(survey_tratmiento$clases_durante_practica))*100) 
+```
+
+Como se pudo observar en la tabla generada de la varible practica_cursando_clases, se obtuvo un valor de 70.45% de valores vacíos, se procede a pasar esos datos vacíos a NA´s, los cuales se trabajan con una funcion de R para poder asignarles un valor.
+
+Ese valor vacío que corresponde a los estudiantes que no realizan práctica profesional, se llena con la descripción "No cursa clases durante práctica" y la columna llamada practica_cursando_clases se cambia por clases_durante_clases.
+
+En otras palabras, se realizó unaa serie de imputaciones:
+
+El valor vacío, se llenó con "No hace práctica"
+No: "no cursa clases durante práctica"
+Si: "Si cursa clases durante práctica"
+
+
+## 4. Analisis descriptivo de estado_estudiante.
+
+### 4.1 El siguiente análisis descriptivo se hará sobre la variable estado_estudiante. 
+
+Esta variable captura si el estudiante que realiza práctica ptofesional, lo hace en el lugar de su primera elección.
+
+boxplot:
+
+```{r echo=FALSE}
+survey <- read.csv("survey_cleaned.csv", sep = ",", header = T)
+
+df_perc_primera_opcion <- as.data.frame(prop.table(table(survey$practica_primera_opcion)))
+
+df_perc_primera_opcion <- df_perc_primera_opcion %>% arrange(-Freq)
+
+df_perc_primera_opcion1 <- df_perc_primera_opcion
+
+
+boxplot(df_perc_primera_opcion1$Freq)
+
+```
+
+El gráfico boxplot de estado_estudiante, donde se puede observar que la mediana se encuentra en 22.72% aproximadamente, teniendo como datos mínimos y máximos un 6.83% y 70.45% respectivamente, la mayoría de los datos están dispersos en tercer y cuarto cuartil
+
+Gráfico de barra: 
+
+```{r echo=FALSE}
+grf2 <- barplot(prop.table(table(survey_tratmiento$estado_estudiante)), las=1, main = "estudiantes haciendo practica en su primer opcion")
+text(grf2, c(0,0), round(prop.table(table(survey_tratmiento$estado_estudiante)), 3))
+
+```
+
+En la figura anterior está representado el estado de los estudiantes, si están realizando la práctica profesional, en caso de ser así, se evalúa si los estudiantes también realizan la práctica profesional en el centro laboral que ellos determinaron como su primera opción, y también se observa la cantidad de estudiantes que no lograron ingresar en su primera opción. 
+
+Se observa que el aproximadamente, el 70% no hace práctica, un 22% no hace práctica en el lugar de su primer elección, y solo el 6% realiza práctica profesional en el lugar de su primera elección.
+
+
+QQNorm: 
+
+```{r echo=FALSE}
+survey <- read.csv("survey_cleaned.csv", sep = ",", header = T)
+
+df_perc_primera_opcion <- as.data.frame(prop.table(table(survey$practica_primera_opcion)))
+
+df_perc_primera_opcion <- df_perc_primera_opcion %>% arrange(-Freq)
+
+df_perc_primera_opcion1 <- df_perc_primera_opcion
+
+plot(qqnorm(df_perc_primera_opcion1$Freq), qqline(df_perc_primera_opcion1$Freq))
+
+```
+
+En las figuras está representada la distribución de los datos, con la línea que se ha trazado se determina la normalidad, en la cual se puede observar, que en el primer punto, de izquierda a derecha, está más cerca de la línea, este punto determina los estudiantes que si realizan la práctica profesional en el lugar deseado en primera opción, lo cual nos dice que aparentemente no hay un alto margen de error, siguiendo con el segundo punto, se empieza a alejar, este punto representa los estudiantes que no lograron acertar en su opción empresarial, y el último punto, el más alejado de la línea son los estudiantes que no realizan la práctica profesional, se puede observar la lejanía del punto respecto a la línea, esto dictaría un alto grado de error en cuanto a la distribución de los datos.
+
+
+### 4.2 El siguiente análisis descriptivo se hará sobre la variable clases_durante_practica:
+
+Esta variable analiza si el estudiante que realiza práctica profesional, cursa clases simultaneamente.
+
+Boxplot:
+
+```{r echo=FALSE}
+survey <- read.csv("survey_cleaned.csv", sep = ",", header = T)
+
+df_perc_cursa_clases <- as.data.frame(prop.table(table(survey$practica_cursando_clases)))
+
+df_perc_cursa_clases <- df_perc_cursa_clases %>% arrange(-Freq)
+
+df_perc_cursa_clases1 <- df_perc_cursa_clases
+
+
+boxplot(df_perc_cursa_clases1$Freq)
+
+```
+
+los valores del boxplot anterior están muy similares a los de la variable anterior, lo que representa este gráfico es lo siguiente, se observa que su punto mínimo es un 6.83% el cual representa a los estudiantes que realizan práctica profesional y no cursan clases simultáneamente, su punto máximo 70.45% representa aquellos estudiantes que no están realizando práctica profesional, y en su mediana, ubicada en el 22.72% son aquellos estudiantes que cursan clases realizando la labor de la práctica profesional.
+
+
+Gráfico de barra: 
+
+```{r echo=FALSE}
+grf2 <- barplot(prop.table(table(survey_tratmiento$clases_durante_practica)), las=1, main = "Estuciantes cursando clases en práctica")
+text(grf2, c(0,0), round(prop.table(table(survey_tratmiento$clases_durante_practica)), 3))
+
+```
+
+En la figura anterior observamos de una forma gráfica la distribución de los estudiantes que realizan práctica profesional cursando o no clases simultáneamente, y los estudiantes que no realizan práctica profesional,como se había mencionado anteriormente de la similitud en los valores de estas variables se debe a la dependencia que estas variables (estado_estudiante y clases_durante_practca) tienen respecto a la variable (practica_actualmente), claramente se observa que las dos variables mencionadas anteriormente trabajan dándole mayor importancia a los estudiantes que respondieron que si realizan práctica actualmente.
+
+
+QQNorm:
+
+```{r echo=FALSE}
+survey <- read.csv("survey_cleaned.csv", sep = ",", header = T)
+
+df_perc_cursa_clases <- as.data.frame(prop.table(table(survey$practica_cursando_clases)))
+
+df_perc_cursa_clases <- df_perc_primera_opcion %>% arrange(-Freq)
+
+df_perc_cursa_clases1 <- df_perc_cursa_clases
+
+plot(qqnorm(df_perc_cursa_clases1$Freq), qqline(df_perc_cursa_clases1$Freq))
+
+```
+
+La figura anterior representa la normalidad de la distribución de los datos para esta variable, según el trazo de la línea y la distancia que existe entre los puntos y ella se determina el margen de error existente, de acuerdo a lo visualizado, vemos el primer punto izquierda a derecha que es el más cercano a la línea,  este representa los estudiantes que no cursan clases durante hacen la práctica, el segundo se ve más alejado de la línea, representa a los estudiantes que si realizan práctica y cursan clases,  al final se observa el punto más alejado, es el que representa los estudiantes que no realizan práctica profesional.
+
+
+## 5. Correlaciones
+
+### A continuación se mostrarán algunas correlaciones.
+
+5.1 Correlación entre rendimiento_academico y rechazo_en_entrevista:
+Con esta correlacion se pretende saber si el rendimiento academico influye en el rechazo o aceptacion para la practica
+
+```{r echo=FALSE}
+survey <- read.csv("survey_cleaned_v2.csv", sep = ",", header = T)
+prop.table(table(survey$rendimiento_academico, survey$rechazo_en_entrevista), 1)
+```
+
+Como se puede observar el 81.81% los estudiantes que consideran que tienen un alto rendimiento académico, no han sido rechazados, versus los estudiantes con alto rendimiento académico que si han sido rechazados, son el 18.19%. Así mismo, el 100% de los estudiantes que consideran que su rendimiento académico es bajo, no han sido rechazados, pero también existe la posibilidad de que nunca se hayan sometido a una entevista laboral. Finalizando con los estudiantes que consideran que tinene un medio rendimiento académico, el 62.5% no ha sido rechazado, versus un 37.5% que si ha sido rechazado.
+
+```{r echo=FALSE}
+survey <- read.csv("survey_cleaned_v2.csv", sep = ",", header = T)
+
+ggplot(survey) +
+  aes(x = rendimiento_academico, fill = factor(rechazo_en_entrevista)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45))
+
+```
+
+A continuación se plantean dos hipótesis para las correlaciones, una nula y la otra alternativa.
+
+Hipótesis nula (Ho): las variables son independientes
+Hipótesis alternativa (Ho): las variables son dependientes
+
+```{r echo=FALSE}
+
+chisq.test(table(survey$rendimiento_academico,survey$rechazo_en_entrevista))
+```
+
+Segun el p-value=0.3895 obtenido de nuestra prueba de chisq se rechza la hipotesis nula.  
+conclusion: el rendimiento academico si influye en cuanto al rechazo de estudiantes en su entrevista laboral, por lo tanto 
+las variables (rendimiento_academico y rechazo_en_entrevista) son dependientes.
+
+5.2 Correlación entre area_sistema_dificulta y rechazo_en_entrevista:
+Con esta correlacion se pretende saber si los estudiantes al tener dificultad en determinada área de la carrera influye en el rechazo o aceptacion para la practica
+
+```{r echo=FALSE}
+as.data.frame(prop.table(table(survey$area_sistema_dificulta))) %>% arrange(-Freq)
+```
+En la figura anterior se puede observar el área con mayor dificultad para los alumnos.
+
+```{r echo=FALSE}
+survey <- read.csv("survey_cleaned_v2.csv", sep = ",", header = T)
+prop.table(table(survey$area_sistema_dificulta, survey$rechazo_en_entrevista), 1)
+```
+
+Como se puede observar en la tabla anterior, del porcentaje de estudiantes que se les dificulta el área de bases de datos, el 66.67% no ha sido rechazado en entrevistas, versus el 33.33% que si ha experimentado el rechazo.
+
+Siguiendo, tenemos el porcentaje de estudiantes que se les dificulta el área de desarrollo, el 68.42% no ha sido rechazado en entrevistas, versus el 31.58% que si han sido rechazados.
+
+Finalizando con los estudiantes que se les dificulta el área de infraestructura, el 60% de esta muestra, no ha sido rechazada, en comparación con el 40% que si ha sido rechazada.
+
+```{r echo=FALSE}
+ggplot(survey) +
+  aes(x = area_sistema_dificulta, fill = factor(rechazo_en_entrevista)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45))
+```
+
+A continuación se plantean dos hipótesis para las correlaciones, una nula y la otra alternativa.
+
+Hipótesis nula (Ho): las variables son independientes
+Hipótesis alternativa (Ho): las variables son dependientes
+
+```{r echo=FALSE}
+chisq.test(table(survey$area_sistema_dificulta,survey$rechazo_en_entrevista))
+```
+Segun el p-value=0.5056 obtenido en esta correlacion se rechaza la hipotesis nula
+Conlcusion: como se rechaza la hipotesis nula, esto significa que las variables son dependientes
+por lo tanto que el estudiante tenga dificultad en determinadas areas si influye sobre el rechazo que pueda tener un estudiante
+
+
+
+
+
+
+## Análisis explicativo
+
+### regresiones
+
+Esta sección busca mostrar las razones o causas que den respuesta a la pregunta principal de investigacón, y asi tratar de explicar mediante la comprobación de la hipótesis planteada porqué ocurre este fenómeno.
+
+
+```{r echo=FALSE}
+prop.table(table(survey$rechazo_en_entrevista))
+```
+```{r echo=FALSE}
+features <- c(
+  "edad", 
+  "rango_indice", 
+  "nuevas_habilidades_autodidacta",
+  "rendimiento_academico", 
+  "estudiante_foraneo",
+  "trabaja",
+  "rechazo_en_entrevista"
+)
+set <- survey[, names(survey) %in% features ]
+set$rechazo_en_entrevista  <- as.factor(set$rechazo_en_entrevista)
+model <- glm(rechazo_en_entrevista ~ ., data = set, family = "binomial")
+importances <- varImp(model)
+importances$colum <- row.names(importances)
+importances <- importances %>% arrange(-Overall)
+importances
+model
+```
+
+Ya recopilados las variables más influyentes ya ordenadas de la más importante a la menos importarte de acuerdo a la variable de respuesta como podemos ver la variable “Rango_indice” es la más influyente apareciendo en diversas ocasiones y teniendo la mayor importancias, para verlo de una manera más clara recopilaremos cada variable con sus respectivos gráficos.
+
+```{r echo=FALSE}
+ggplot(set) +
+  aes(x= rango_indice, fill=factor(rechazo_en_entrevista))+
+  geom_bar(position='fill')+
+  theme(axis.text.x = element_text(angle = 45))+
+  scale_fill_manual(values=c("#999999","#E69F00"))
+```
+
+El grafico anterior muestra el rechazo de las entrevistas que se da menos para aquello estudiantes que tienen el índice mayor o igual a 81, los que se encuentran en excelencia académica, algo notable se puede ver es que las o los estudiantes que tienen mayor rechazo son los que tienen un índice menor a 71. Notamos que la barra del índice 76-80 se nota que hay más rechazo pero no es así, en esa barra la cantidad de personas que tienen ese índice es mayor a la cantidad de personas que están en los índices anteriores, comparando con las barras anteriores notamos que los porcentajes de rechazo son menores. 
+
+```{r echo=FALSE}
+ggplot(set) +
+  aes(x= estudiante_foraneo, fill=factor(rechazo_en_entrevista))+
+  geom_bar(position='fill')+
+  theme(axis.text.x = element_text(angle = 45))+
+  scale_fill_manual(values=c("#999999","#E69F00"))
+```
+
+Logramos apreciar en el grafico anterior que los estudiantes que son foráneos tienen mayor aceptación en las entrevistas consiguiendo la aprobación de las empresas para realizar la practica profesional, las personas que son del interior del país no tienen problemas en encontrar una empresa en donde puedan hacer la practica a comparación a los estudiantes que viven en la capital ellos se demuestran que tienden a ser mas rechazados por las empresas.
+
+```{r echo=FALSE}
+ggplot(set) +
+  aes(x= trabaja, fill=factor(rechazo_en_entrevista))+
+  geom_bar(position='fill')+
+  theme(axis.text.x = element_text(angle = 45))+
+  scale_fill_manual(values=c("#999999","#E69F00"))
+```
+
+Claramente como vemos en el grafico anterior que las personas que trabajan tienen más aceptación por parte de las empresas dado que los estudiantes tienen un poco de experiencia en el ámbito laboral, aunque en la barra de las personas que no trabajan también notamos que, aunque haya más rechazo también hay aceptación, demostrando que las empresas aceptan a los estudiantes para darles una oportunidad en el campo laboral aunque no tengan experiencia en este.
+
+```{r echo=FALSE}
+ggplot(set) +
+  aes(x= edad, fill=factor(rechazo_en_entrevista))+
+  geom_bar(position='stack')+
+  theme(axis.text.x = element_text(angle = 45))+
+  scale_fill_manual(values=c("#999999","#E69F00"))
+```
+
+En el grafico anterior vemos que los estudiantes que tienen años de 20-25 tienen menos rechazo en las entrevistas por parte de las empresas, notamos las mismas circunstancias en la barra de las edades de 26-30, podemos decir que las empresas tienen una mayor aceptación a los estudiantes que están a una edad de 20 a 25 años además de que la mayoría de los encuestados son muy jóvenes dándoles más posibilidades de ser aceptados, pero a los estudiantes que tienen una edad de 26 a 30 no es tanta la aceptación a comparación con la barra anterior y la o el estúdiate con mayoría de edad tienen aceptación pero no podemos decir que la tiene o no, por la poca cantidad de datos en la ultima barra. 
+
+
+```{r echo=FALSE}
+ggplot(set) +
+  aes(x= rendimiento_academico, fill=factor(rechazo_en_entrevista))+
+  geom_bar(position='stack')+
+  theme(axis.text.x = element_text(angle = 45))+
+  scale_fill_manual(values=c("#999999","#E69F00"))
+```
+
+En el grafico anterior vemos con claridad que el estudiantado que tiene alto rendimiento académico obviamente consigue menos rechazo por parte de las empresas, notamos que el rendimiento medio del estudiantado es muy alto y también tienen un gran número de aceptación pero le sigue un número considerable de rechazo pero a pesar del número de rechazo el estudiantado consigue aceptación en algún momento. 
+
+
+
+## solucion ti
